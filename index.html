@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Atlas of Me · Travel Map</title>
+<meta name="description" content="Interactive world map: mark the countries you've visited, lived in or dream of, with colours and patterns.">
+<meta name="theme-color" content="#070b16">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%2306b6d4'/%3E%3Cpath d='M10 28c10 4 18-6 26 0s14 2 18-2M12 42c8-3 16 5 24 0s12-4 16 0' stroke='%23fff' stroke-width='4' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="dark">
+<div id="app">
+  <svg id="map" role="img" aria-label="World map"></svg>
+  <div id="tooltip" role="status" aria-live="polite" hidden></div>
+
+  <header class="topbar glass">
+    <div class="brand"><span class="logo"></span><div><b>Atlas of Me</b><small>my travel map</small></div></div>
+    <nav class="proj" id="projNav" aria-label="Projection"></nav>
+    <div class="actions">
+      <button class="icon" id="themeBtn" title="Toggle light/dark" aria-label="Toggle light or dark mode">◐</button>
+      <button class="icon" id="spinBtn" title="Auto-spin globe" aria-pressed="true" aria-label="Toggle globe auto-spin">⟳</button>
+      <button class="icon" id="resetBtn" title="Reset view" aria-label="Reset view">◎</button>
+      <div class="menuwrap">
+        <button class="pill" id="menuBtn" aria-haspopup="true" aria-expanded="false">Share &amp; export ▾</button>
+        <div class="menu glass" id="menu" hidden>
+          <button data-act="share">🔗 Copy share link</button>
+          <button data-act="png">🖼️ Download PNG</button>
+          <button data-act="svg">✒️ Download SVG</button>
+          <button data-act="json">⬇️ Export JSON</button>
+          <button data-act="import">⬆️ Import JSON</button>
+          <hr><button data-act="clear" class="danger">🗑️ Clear all marks</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="sharedBanner" class="banner glass" hidden>
+    You're viewing a shared map. <button class="pill" id="keepShared">Make it my map</button> <button class="pill ghost" id="leaveShared">Back to mine</button>
+  </div>
+
+  <aside class="panel left glass" id="leftPanel" aria-label="Styles and stats">
+    <section>
+      <h2>Mark as <small>click a country to apply</small></h2>
+      <div id="cats" class="cats" role="radiogroup" aria-label="Category"></div>
+      <button class="pill ghost small" id="addCat">+ Add category</button>
+    </section>
+    <section>
+      <h2>Stats</h2>
+      <div class="bigstat"><div class="ring big" id="ringWorld"></div><div><b id="statCount">0</b><span>of <b>195</b> countries</span><small>193 UN members + Vatican City + Palestine. Categories ticked “counts” are included.</small></div></div>
+      <div id="contStats" class="contstats"></div>
+      <p class="hint" id="extraStat"></p>
+    </section>
+    <p class="hint keys">Click: mark · Click again: unmark · <kbd>Shift</kbd>/<kbd>Alt</kbd>-click or right-click: clear · Drag: pan/rotate · Scroll: zoom</p>
+  </aside>
+
+  <aside class="panel right glass" id="rightPanel" aria-label="Find countries">
+    <div class="searchbox">
+      <input id="search" type="search" placeholder="Search countries… (press /)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="results" aria-autocomplete="list">
+      <ul id="results" role="listbox" hidden></ul>
+    </div>
+    <div class="listtabs" role="tablist">
+      <button role="tab" data-f="marked" aria-selected="true">Marked <span id="markedN">0</span></button>
+      <button role="tab" data-f="all" aria-selected="false">All countries</button>
+    </div>
+    <ul id="list" class="list"></ul>
+  </aside>
+
+  <div class="legend glass" id="legend" aria-label="Legend"></div>
+
+  <nav class="mobtabs glass" aria-label="Panels">
+    <button data-p="leftPanel">🎨 Styles</button><button data-p="map">🗺️ Map</button><button data-p="rightPanel">🔎 Countries</button>
+  </nav>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <input type="file" id="fileIn" accept="application/json,.json" hidden>
+</div>
+
+<dialog id="catDlg" class="glass">
+  <form method="dialog" id="catForm">
+    <h3 id="catDlgTitle">Edit category</h3>
+    <label>Name <input id="catName" maxlength="24" required></label>
+    <label>Colour <input id="catColor" type="color"></label>
+    <div class="swatches" id="swatches"></div>
+    <fieldset><legend>Pattern</legend><div id="patPick" class="patpick"></div></fieldset>
+    <label class="chk"><input type="checkbox" id="catCounts"> Counts towards “visited” stats</label>
+    <div class="dlgbtns"><button type="button" class="pill ghost danger" id="catDelete">Delete</button><span></span><button value="cancel" class="pill ghost" formnovalidate>Cancel</button><button value="ok" class="pill" id="catSave">Save</button></div>
+  </form>
+</dialog>
+
+<script src="vendor/d3.min.js"></script>
+<script src="vendor/d3-geo-projection.min.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
+<script src="vendor/lz-string.min.js"></script>
+<script src="vendor/countries.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
