@@ -2,11 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Atlas of Me · Travel Map</title>
 <meta name="description" content="Interactive world map: mark the countries you've visited, lived in or dream of, with colours and patterns.">
 <meta name="theme-color" content="#070b16">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='28' fill='%2306b6d4'/%3E%3Cpath d='M10 28c10 4 18-6 26 0s14 2 18-2M12 42c8-3 16 5 24 0s12-4 16 0' stroke='%23fff' stroke-width='4' fill='none'/%3E%3C/svg%3E">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Atlas of Me">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+<link rel="icon" href="assets/icons/icon-192.png" type="image/png">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body class="dark">
@@ -18,6 +24,7 @@
     <div class="brand"><span class="logo"></span><div><b>Atlas of Me</b><small>my travel map</small></div></div>
     <nav class="proj" id="projNav" aria-label="Projection"></nav>
     <div class="actions">
+      <button class="icon" id="wxBtn" title="Weather" aria-label="Toggle weather panel" aria-pressed="false"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="8" cy="8.5" r="2.6"/><path d="M8 3.2v1.1M3.4 8.5H4.5M8 13.7v1.1M11.5 8.5h1.1M4.7 5.2l.8.8M11.3 5.2l-.8.8"/><path d="M16.2 19h-7.2a3.3 3.3 0 0 1-.2-6.6 5.1 5.1 0 0 1 9.7-1 3.1 3.1 0 0 1-2.3 7.6z"/></svg></button>
       <button class="icon" id="themeBtn" title="Toggle light/dark" aria-label="Toggle light or dark mode">◐</button>
       <button class="icon" id="spinBtn" title="Auto-spin globe" aria-pressed="true" aria-label="Toggle globe auto-spin">⟳</button>
       <button class="icon" id="resetBtn" title="Reset view" aria-label="Reset view">◎</button>
@@ -30,6 +37,7 @@
           <button data-act="json">⬇️ Export JSON</button>
           <button data-act="import">⬆️ Import JSON</button>
           <hr><button data-act="clear" class="danger">🗑️ Clear all marks</button>
+          <p class="note">On iPhone, a Home Screen install keeps its own copy of your marks. Use a share link or export/import to move them between Safari and the installed app.</p>
         </div>
       </div>
     </div>
@@ -66,10 +74,40 @@
     <ul id="list" class="list"></ul>
   </aside>
 
+  <div id="wxBadges" class="wxbadges" aria-hidden="true"></div>
   <div class="legend glass" id="legend" aria-label="Legend"></div>
 
+  <aside class="panel weather glass" id="weatherPanel" aria-label="Weather" aria-hidden="true" inert>
+    <div class="wxhead">
+      <h2>Weather <small id="wxUpdated"></small></h2>
+      <div class="wxtools">
+        <div class="wxsort" role="group" aria-label="Sort weather">
+          <button type="button" data-s="name" aria-pressed="true">Name</button>
+          <button type="button" data-s="temp" aria-pressed="false">Temp</button>
+          <button type="button" data-s="time" aria-pressed="false">Time</button>
+        </div>
+        <button type="button" class="pill ghost small" id="wxUnit" aria-label="Temperature unit Celsius. Switch to Fahrenheit.">°C</button>
+        <button type="button" class="pill ghost small" id="wxBadgesBtn" aria-pressed="true">Badges</button>
+        <button type="button" class="icon" id="wxRefresh" aria-label="Refresh weather">↻</button>
+        <button type="button" class="icon" id="wxClose" aria-label="Close weather">×</button>
+      </div>
+    </div>
+    <ul id="wxList" class="wxlist"></ul>
+    <p class="hint wxfoot">Capital forecasts from <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>. “Show weather” is on for Lived and Want to visit, and can be changed per category.</p>
+  </aside>
+
+  <div id="iosHint" class="ioshint glass" hidden>
+    <p><b>Add Atlas of Me to your Home Screen</b></p>
+    <p>In Safari, tap the Share button, then <b>Add to Home Screen</b>.</p>
+    <p class="hint">The installed app stores marks separately from Safari. Copy them across with a share link or Export / Import JSON.</p>
+    <button type="button" class="pill small" id="iosHintDismiss">Got it</button>
+  </div>
+
   <nav class="mobtabs glass" aria-label="Panels">
-    <button data-p="leftPanel">🎨 Styles</button><button data-p="map">🗺️ Map</button><button data-p="rightPanel">🔎 Countries</button>
+    <button data-p="leftPanel">🎨 Styles</button>
+    <button data-p="map">🗺️ Map</button>
+    <button data-p="weatherPanel">🌤️ Weather</button>
+    <button data-p="rightPanel">🔎 Countries</button>
   </nav>
   <div id="toast" role="status" aria-live="polite"></div>
   <input type="file" id="fileIn" accept="application/json,.json" hidden>
@@ -83,6 +121,7 @@
     <div class="swatches" id="swatches"></div>
     <fieldset><legend>Pattern</legend><div id="patPick" class="patpick"></div></fieldset>
     <label class="chk"><input type="checkbox" id="catCounts"> Counts towards “visited” stats</label>
+    <label class="chk"><input type="checkbox" id="catWeather"> Show weather for this category</label>
     <div class="dlgbtns"><button type="button" class="pill ghost danger" id="catDelete">Delete</button><span></span><button value="cancel" class="pill ghost" formnovalidate>Cancel</button><button value="ok" class="pill" id="catSave">Save</button></div>
   </form>
 </dialog>
@@ -92,6 +131,7 @@
 <script src="vendor/topojson-client.min.js"></script>
 <script src="vendor/lz-string.min.js"></script>
 <script src="vendor/countries.js"></script>
+<script src="vendor/capitals.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>
